@@ -162,43 +162,158 @@
 
   <footer>Made with 💜 for story lovers</footer>
 
-  <script>
-    let currentCharacter = "Zayn";
-    let username = "";
-    function saveName() {
-      username = document.getElementById("username").value.trim() || "Friend";
-      document.getElementById("welcome").textContent = "Welcome, " + username + "!";
-      document.getElementById("profileName").textContent = username;
-      document.getElementById("username").value = username;
+  
+<script>
+  let currentCharacter = "Zayn";
+  let username = "";
+  let history = [];
+
+  const characters = {
+    Zayn: {
+      personality: "cold, sarcastic, proud, secretly kind",
+      replies: [
+        "Zayn folds his arms. 'Tum hamesha itne sawaal kyun poochti ho?'",
+        "Zayn looks away. 'Mujhe farq nahi padta... samjhi?'",
+        "Zayn raises an eyebrow. 'Achha? Phir aage batao.'"
+      ]
+    },
+    Alex: {
+      personality: "mysterious, confident, clever",
+      replies: [
+        "Alex smiles slightly. 'Interesting. Aur kya chhupa rahi ho mujhse?'",
+        "Alex leans back. 'Tumhe lagta hai tum mujhe samajh gayi?'",
+        "Alex says quietly, 'Main sun raha hoon. Continue.'"
+      ]
+    },
+    Rohan: {
+      personality: "competitive, witty, stubborn",
+      replies: [
+        "Rohan smirks. 'Bas itna hi? Mujhe laga tum better comeback dogi.'",
+        "Rohan shakes his head. 'Tumse agree karna impossible hai.'",
+        "Rohan looks at you. 'Fine. Is baar tumhari baat sun leta hoon.'"
+      ]
+    },
+    Ari: {
+      personality: "wise, mysterious, adventurous",
+      replies: [
+        "Ari studies the magical map. 'Lagta hai hamara agla raasta badal gaya.'",
+        "Ari turns towards you. 'Tumhare faisle ka asar poori kingdom par hoga.'",
+        "Ari smiles. 'The adventure abhi khatam nahi hui.'"
+      ]
     }
-    function chooseStory(name) {
-      currentCharacter = name;
-      document.getElementById("character").textContent = "Chatting with " + name;
-      document.getElementById("chat").innerHTML =
-        '<div class="message"><b>' + name + ':</b> ' +
-        'So, ' + (username || "Friend") + ', ready to start our story?</div>';
-      location.hash = "chatroom";
+  };
+
+  function saveName() {
+    username =
+      document.getElementById("username").value.trim() || "Friend";
+
+    document.getElementById("welcome").textContent =
+      "Welcome, " + username + "!";
+
+    document.getElementById("profileName").textContent = username;
+    document.getElementById("username").value = username;
+  }
+
+  function addMessage(speaker, message) {
+    const chat = document.getElementById("chat");
+    const bubble = document.createElement("div");
+    bubble.className = "message";
+
+    const label = document.createElement("b");
+    label.textContent = speaker + ": ";
+
+    bubble.appendChild(label);
+    bubble.appendChild(document.createTextNode(message));
+    chat.appendChild(bubble);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function chooseStory(name) {
+    currentCharacter = characters[name] ? name : "Zayn";
+    history = [];
+
+    document.getElementById("character").textContent =
+      "Chatting with " + currentCharacter +
+      " · " + characters[currentCharacter].personality;
+
+    document.getElementById("chat").replaceChildren();
+
+    addMessage(
+      currentCharacter,
+      "Looks like we have something to talk about. " +
+      (username || "Friend") + ", tum shuru karo."
+    );
+
+    location.hash = "chatroom";
+  }
+
+  function getReply(message) {
+    const character = characters[currentCharacter];
+    const text = message.toLowerCase();
+    const language = document.getElementById("language").value;
+
+    let replies = character.replies;
+
+    if (language === "English") {
+      replies = [
+        currentCharacter + " looks at you thoughtfully. 'Go on, I'm listening.'",
+        currentCharacter + " raises an eyebrow. 'And what do you expect me to say?'",
+        currentCharacter + " pauses. 'That's not what I expected you to say.'"
+      ];
+    } else if (language === "Hindi") {
+      replies = [
+        currentCharacter + " tumhari taraf dekhta hai. 'Haan, bolo. Main sun raha hoon.'",
+        currentCharacter + " kehta hai, 'Tum chahti kya ho aakhir?'",
+        currentCharacter + " kuch pal rukta hai. 'Mujhe tumse ye umeed nahi thi.'"
+      ];
     }
-    function sendMessage() {
-      const input = document.getElementById("reply");
-      const message = input.value.trim();
-      if (!message) return;
-      const chat = document.getElementById("chat");
-      const user = document.createElement("div");
-      user.className = "message";
-      user.textContent = (username || "You") + ": " + message;
-      chat.appendChild(user);
-      const answer = document.createElement("div");
-      answer.className = "message";
-      const language = document.getElementById("language").value;
-      answer.textContent = currentCharacter + ": " +
-        (language === "Hindi" ? "Achha, " :
-         language === "English" ? "Interesting, " : "Achha, ") +
-        (username || "friend") + "! Tumhari baat sun raha hoon. Aage kya hota hai?";
-      chat.appendChild(answer);
-      input.value = "";
-      chat.scrollTop = chat.scrollHeight;
+
+    if (text.includes("sorry") || text.includes("maaf")) {
+      return currentCharacter +
+        " tumhari baat sunta hai. 'Theek hai, par mujhe samjhao ki kya hua.'";
     }
-  </script>
+
+    if (text.includes("love") || text.includes("pyaar")) {
+      return currentCharacter +
+        " tumhari taraf dekhta hai. 'Tum sach mein aisa sochti ho?'";
+    }
+
+    if (text.includes("bye") || text.includes("ja rahi")) {
+      return currentCharacter +
+        " kehta hai, 'Ruko, baat abhi khatam nahi hui.'";
+    }
+
+    if (text.includes("?")) {
+      return currentCharacter +
+        " soch kar kehta hai, 'Achha sawaal hai. Tumhe kya lagta hai?'";
+    }
+
+    const previous = history[history.length - 1];
+
+    if (previous) {
+      return replies[Math.floor(Math.random() * replies.length)] +
+        " Tumne abhi kaha: '" + previous.slice(0, 100) + "'.";
+    }
+
+    return replies[Math.floor(Math.random() * replies.length)];
+  }
+
+  function sendMessage() {
+    const input = document.getElementById("reply");
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    addMessage(username || "You", message);
+    history.push(message);
+
+    const answer = getReply(message);
+    addMessage(currentCharacter, answer);
+
+    input.value = "";
+    input.focus();
+  }
+</script>
+
 </body>
 </html>
